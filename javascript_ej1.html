@@ -1,0 +1,30 @@
+<html>
+
+<head>
+</head>
+
+<body>
+    <script language="JavaScript">
+        var datos;
+        datos = prompt('Ingrese su nombre, primer apellido, segundo apellido y año de nacimiento.');
+
+        var datosMinusculas= datos.toUpperCase();
+
+        var datosTroceados = datosMinusculas.split(" ");
+
+        var nombre = datosTroceados[0];
+        var apellido1 = datosTroceados[1];
+        var apellido2 = datosTroceados[2];
+        var anio = datosTroceados[3];
+
+        document.write("Nombre: " + nombre + "<br>"
+        + "Apellido1: " + apellido1 + "<br>"
+        + "Apellido2: " + apellido2 + "<br>"
+        + "Año: " + anio + "<br>");
+        var usuario =  (nombre.substring(0, 1)+ apellido1 + apellido2.substring(0, 1) + anio.substring(2,4)).toLowerCase();
+        document.write("Nombre de Usuario: " + usuario);
+        
+    </script>
+</body>
+
+</html>
