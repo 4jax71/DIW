@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style type="text/css">
+        * {
+            margin: 0;
+            box-sizing: border-box;
+            text-align: center;
+        }
+
+        .contenedor {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            grid-template-rows: 1fr 1fr 1fr;
+            background-color: gainsboro;
+            border: 1px solid black;
+            gap: 10px;
+            padding: 10px;
+            color: white;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+
+
+        }
+
+        .grid>div {
+            height: 200px;
+            margin-left: 50px;
+        }
+
+        img {
+            height: 200px;
+        }
+    </style>
+
+</head>
+
+<body>
+    <h1 id="contador">Puntuación: 0</h1>
+    <section class="contenedor">
+        <div class="img">
+            <img src="muestra.jpg" alt="imagen" onclick="cambiarImagenJS('img1'),estadoInicial()" id="img1">
+        </div>
+        <div class="img">
+            <img src="muestra.jpg" alt="imagen" onclick="cambiarImagenJS('img2'),estadoInicial()" id="img2">
+        </div>
+        <div class="img">
+            <img src="muestra.jpg" alt="imagen" onclick="cambiarImagenJS('img3'),estadoInicial()" id="img3">
+        </div>
+        <div class="img">
+            <img src="muestra.jpg" alt="imagen" onclick="cambiarImagenJS('img4'),estadoInicial()" id="img4">
+        </div>
+        <div class="img">
+            <img src="muestra.jpg" alt="imagen" onclick="cambiarImagenJS('img5'),estadoInicial()" id="img5">
+        </div>
+        <div class="img">
+            <img src="muestra.jpg" alt="imagen" onclick="cambiarImagenJS('img6'),estadoInicial()" id="img6">
+        </div>
+        <div class="img">
+            <img src="muestra.jpg" alt="imagen" onclick="cambiarImagenJS('img7'),estadoInicial()" id="img7">
+        </div>
+        <div class="img">
+            <img src="muestra.jpg" alt="imagen" onclick="cambiarImagenJS('img8'),estadoInicial()" id="img8">
+        </div>
+        <div class="img">
+            <img src="muestra.jpg" alt="imagen" onclick="cambiarImagenJS('img9'),estadoInicial()" id="img9">
+        </div>
+        <div class="img">
+            <img src="muestra.jpg" alt="imagen" onclick="cambiarImagenJS('img10'),estadoInicial()" id="img10">
+        </div>
+        <div class="img">
+            <img src="muestra.jpg" alt="imagen" onclick="cambiarImagenJS('img11'),estadoInicial()" id="img11">
+        </div>
+        <div class="img">
+            <img src="muestra.jpg" alt="imagen" onclick="cambiarImagenJS('img12'),estadoInicial()" id="img12">
+        </div>
+    </section>
+
+
+    <script>
+        var selec = [];
+        var all = [];
+        var puntuacion = 1;
+        for (var i = 0; i < 12; i++) {
+            all.push(document.getElementsByTagName("img")[i]);
+        }
+        console.log(all);
+
+        function cambiarImagenJS(id) {
+            if (id == "img1" || id == "img4") {
+                document.getElementById(id).src = "ficha1.png";
+                selec.push(id);
+            }
+            if (id == "img2" || id == "img5") {
+                document.getElementById(id).src = "ficha2.png";
+                selec.push(id);
+            }
+            if (id == "img3" || id == "img6") {
+                document.getElementById(id).src = "ficha3.png";
+                selec.push(id);
+            }
+            if (id == "img7" || id == "img10") {
+                document.getElementById(id).src = "ficha4.png";
+                selec.push(id);
+            }
+            if (id == "img8" || id == "img11") {
+                document.getElementById(id).src = "ficha5.png";
+                selec.push(id);
+            }
+            if (id == "img9" || id == "img12") {
+                document.getElementById(id).src = "ficha6.png";
+                selec.push(id);
+            }
+        }
+
+        function compararId() {
+
+
+        }
+        function estadoInicial() {
+
+            console.log(selec);
+            if (selec.length >= 2) {
+
+                for (var i = 0; i < selec.length; i++) {
+                    for (var f = 0; f < selec.length; f++) {
+                        if (selec[i] == "img1" && selec[f] == "img4") {
+                            document.getElementById("contador").innerHTML = "Puntuación: " + (puntuacion++);
+                            borrar();
+                        }
+                        if (selec[i] == "img2" && selec[f] == "img5") {
+                            document.getElementById("contador").innerHTML = "Puntuación: " + (puntuacion++);
+                            borrar();
+                        }
+                        if (selec[i] == "img3" && selec[f] == "img6") {
+                            document.getElementById("contador").innerHTML = "Puntuación: " + (puntuacion++);
+                            borrar();
+                        }
+                        if (selec[i] == "img7" && selec[f] == "img10") {
+                            document.getElementById("contador").innerHTML = "Puntuación: " + (puntuacion++);
+                            borrar();
+                        }
+                        if (selec[i] == "img8" && selec[f] == "img11") {
+                            document.getElementById("contador").innerHTML = "Puntuación: " + (puntuacion++);
+                            borrar();
+                        }
+                        if (selec[i] == "img9" && selec[f] == "img12") {
+                            document.getElementById("contador").innerHTML = "Puntuación: " + (puntuacion++);
+                            borrar();
+                        }
+                    }
+                }
+                console.log(all);
+                selec = [];
+                setTimeout(actualizar, 500);
+            }
+
+        }
+        function actualizar() {
+            for (var i = 0; i < all.length; i++) {
+                document.getElementById(all[i].id).src = "muestra.jpg";
+            }
+        }
+
+        function borrar() {
+            for (var i = 0; i < all.length; i++) {
+                console.log(selec);
+                if (all[i].id == selec[0]) {
+                    all.splice(i, 1);
+                }
+                if (all[i].id == selec[1]) {
+                    all.splice(i, 1);
+                }
+            }
+        }
+    </script>
+</body>
+
+</html>
