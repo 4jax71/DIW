@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style type="text/css">
+        * {
+            margin: 0;
+            box-sizing: border-box;
+            text-align: center;
+        }
+
+        .contenedor {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            grid-template-rows: 1fr 1fr 1fr;
+            background-color: gainsboro;
+            border: 1px solid black;
+            gap: 10px;
+            padding: 10px;
+            color: white;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+
+
+        }
+
+        .grid>div {
+            height: 200px;
+            margin-left: 50px;
+        }
+
+        img {
+            height: 200px;
+        }
+    </style>
+
+</head>
+
+<body>
+    <h1 id="contador">Puntuación: 0</h1>
+    <section class="contenedor">
+        <div><img alt="imagen" onclick="acciones('posi1')" id="posi1"></div>
+        <div><img alt="imagen" onclick="acciones('posi2')" id="posi2"></div>
+        <div><img alt="imagen" onclick="acciones('posi3')" id="posi3"></div>
+        <div><img alt="imagen" onclick="acciones('posi4')" id="posi4"></div>
+        <div><img alt="imagen" onclick="acciones('posi5')" id="posi5"></div>
+        <div><img alt="imagen" onclick="acciones('posi6')" id="posi6"></div>
+        <div><img alt="imagen" onclick="acciones('posi7')" id="posi7"></div>
+        <div><img alt="imagen" onclick="acciones('posi8')" id="posi8"></div>
+        <div><img alt="imagen" onclick="acciones('posi9')" id="posi9"></div>
+        <div><img alt="imagen" onclick="acciones('posi10')" id="posi10"></div>
+        <div><img alt="imagen" onclick="acciones('posi11')" id="posi11"></div>
+        <div><img alt="imagen" onclick="acciones('posi12')" id="posi12"></div>
+    </section>
+
+
+    <script>
+        var selecionadas = [];
+        var all = [];
+        var puntuacion = 0;
+
+
+        for (var i = 0; i < 12; i++) {
+            document.getElementsByTagName("img")[i].src = "muestra.jpg";
+            all.push(document.getElementsByTagName("img")[i]);
+        }
+
+        function acciones(id) {
+            cambiarImagen(id);
+
+            if (selecionadas.length == 2) {
+                if (comprobarPosicion() == true) {
+                    if (puntuacion >= 6) {
+                        puntuacion -= 1;
+                    }
+                    document.getElementById("contador").innerHTML = "Puntuación: " + (puntuacion += 1);
+                }
+                selecionadas = [];
+                setTimeout(estadoInicial, 500);
+            }
+        }
+
+        function cambiarImagen(id) {
+            if (selecionadas.length < 2) {
+                if (id == "posi1" || id == "posi4") {
+                    document.getElementById(id).src = "ficha1.png";
+                    selecionadas.push(id);
+                }
+                if (id == "posi2" || id == "posi5") {
+                    document.getElementById(id).src = "ficha2.png";
+                    selecionadas.push(id);
+                }
+                if (id == "posi3" || id == "posi6") {
+                    document.getElementById(id).src = "ficha3.png";
+                    selecionadas.push(id);
+                }
+                if (id == "posi7" || id == "posi10") {
+                    document.getElementById(id).src = "ficha4.png";
+                    selecionadas.push(id);
+                }
+                if (id == "posi8" || id == "posi11") {
+                    document.getElementById(id).src = "ficha5.png";
+                    selecionadas.push(id);
+                }
+                if (id == "posi9" || id == "posi12") {
+                    document.getElementById(id).src = "ficha6.png";
+                    selecionadas.push(id);
+                }
+
+            }
+        }
+
+        function comprobarPosicion() {
+            for (var i = 0; i < selecionadas.length; i++) {
+                for (var f = 0; f < selecionadas.length; f++) {
+                    if (selecionadas[i] == "posi1" && selecionadas[f] == "posi4") {
+                        console.log(selecionadas[i], selecionadas[f]);
+                        borrar(selecionadas[i], selecionadas[f]);
+                        return true;
+                    }
+                    if (selecionadas[i] == "posi2" && selecionadas[f] == "posi5") {
+                        console.log(selecionadas[i], selecionadas[f]);
+                        borrar(selecionadas[i], selecionadas[f]);
+                        return true;
+                    }
+                    if (selecionadas[i] == "posi3" && selecionadas[f] == "posi6") {
+                        console.log(selecionadas[i], selecionadas[f]);
+                        borrar(selecionadas[i], selecionadas[f]);
+                        return true;
+                    }
+                    if (selecionadas[i] == "posi7" && selecionadas[f] == "posi10") {
+                        console.log(selecionadas[i], selecionadas[f]);
+                        borrar(selecionadas[i], selecionadas[f]);
+                        return true;
+                    }
+                    if (selecionadas[i] == "posi8" && selecionadas[f] == "posi11") {
+                        console.log(selecionadas[i], selecionadas[f]);
+                        borrar(selecionadas[i], selecionadas[f]);
+                        return true;
+                    }
+                    if (selecionadas[i] == "posi9" && selecionadas[f] == "posi12") {
+                        console.log(selecionadas[i], selecionadas[f]);
+                        borrar(selecionadas[i], selecionadas[f]);
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+        function estadoInicial() {
+            for (var i = 0; i < all.length; i++) {
+                document.getElementById(all[i].id).src = "muestra.jpg";
+            }
+        }
+
+        function borrar(p1, p2) {
+            for (var i = 0; i < all.length; i++) {
+                if (all[i].id == p1) {
+                    all.splice(i, 1);
+                }
+                if (all[i].id == p2) {
+                    all.splice(i, 1);
+                }
+            }
+        }
+
+
+    </script>
+</body>
+
+</html>
