@@ -4,6 +4,11 @@ $color3: #819a8d;
 $color4: #263b30;
 $fondo: linear-gradient(180deg, #ffffff 0, #fffefa 10%, #fff2f2 20%, #fde5e7 30%, #e3d6d8 40%, #c6c6c6 50%, #aab6b2 60%, #94a79f 70%, #819a8d 80%, #748f7d 90%, #6a866e 100%);
 
+@mixin wh100 { //solo se me repite esto
+  width: 100%;
+  height: 100%;
+} 
+
 @font-face {
   font-family: fuenteCustom;
   src: url("../fonts/Mansalva-Regular.ttf");
@@ -66,8 +71,7 @@ body {
 }
   
 table{
-  width: 100%;
-  height: 100%;
+  @include wh100();
   border-collapse: collapse;
 }
 th,td{
@@ -124,8 +128,7 @@ th,td{
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
+  @include wh100();
   display: none;
   background-color: rgba(0, 0, 0, 0);
 }
