@@ -44,8 +44,10 @@ function flip() {
     if (lastImg == null) {
         lastImg = currentImg;
         lastCard = this;
+        console.log(lastCard,currentImg);
         lastCard.style.backgroundImage = "url()";
         currentImg.style.display = "block";
+        console.log(lastCard,currentImg);
     } else {
         if (lastImg != currentImg) {
             if (lastImg.src == currentImg.src) {

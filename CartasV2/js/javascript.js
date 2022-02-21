@@ -1,169 +1,415 @@
-window.addEventListener("load", init);
+$(document).ready(init);
 
-const nick = document.getElementById('nick');
-const cards = document.querySelectorAll(".carta");
-const imgs = document.querySelectorAll(".carta > img");
-const langEs = document.getElementById("ES");
-const langEn = document.getElementById("EN");
+var popoverTriggerList = [].slice.call(
+    document.querySelectorAll('[data-bs-toggle="popover"]')
+);
+var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
+    return new bootstrap.Popover(popoverTriggerEl);
+});
+
+const nick = $("#nick");
+const cards = $(".carta");
+const imgs = $(".carta > img");
+const langEs = $("#ES");
+const langEn = $("#EN");
 var lastCard = null;
 var lastImg = null;
 var scoreCounter = 0;
 var errorCounter = 0;
+var blockInteractions = $("#blockInteractions");
+var bomba = null;
+var currentImg = null;
+var lastImg = null;
+var lastCard = null;
+var dificultad = null;
+var progreso = null;
+let sources = new Array(
+    "imgs/carta1.png",
+    "imgs/carta1.png",
+    "imgs/carta2.png",
+    "imgs/carta2.png",
+    "imgs/carta3.png",
+    "imgs/carta3.png",
+    "imgs/carta4.png",
+    "imgs/carta4.png",
+    "imgs/carta5.png",
+    "imgs/carta5.png",
+    "imgs/carta6.png",
+    "imgs/carta6.png",
+    "imgs/carta7.png",
+    "imgs/carta7.png",
+    "imgs/bomba.png"
+);
 
-var blockInteractions = document.getElementById('blockInteractions');
+const NO_OF_HIGH_SCORES = 5;
+const HIGH_SCORES = 'highScores';
+const highScoreString = localStorage.getItem(HIGH_SCORES);
+var highScores = JSON.parse(highScoreString) ?? [];
+var lowestScore = highScores[5]?.score ?? 1000;
+var players = [{"name": "player","score": 10},{"name": "player","score": 20},{"name": "player","score": 40},{"name": "player","score": 60},{"name": "player","score": 80}];
+    
+
 
 function init() {
-    while (nick.innerHTML == "" || nick.innerHTML == "Nick") {
-        nick.innerHTML = prompt("Dime tu nombre:");
-    }
-    localStorage.setItem("nick", nick.innerHTML);
+    preload(sources);
+    showHighScores();
 
-    cards.forEach(element => {
-        element.addEventListener("click", flip);
-    });
     if (localStorage.getItem("lang") == null) {
         localStorage.setItem("lang", "ES");
     }
-    langEs.addEventListener("click", () => {
+
+    langEs.click(function () {
         localStorage.setItem("lang", "ES");
         changeLang();
     });
-    langEn.addEventListener("click", () => {
+
+    langEn.click(function () {
         localStorage.setItem("lang", "EN");
         changeLang();
     });
-
     changeLang();
-    updateTop();
-    randomCards();
 
 }
-
+$("#play").on("click", function () {
+    var getNick = $("#getNick").val();
+    if (getNick != "") {
+        nick.html(getNick);
+        localStorage.setItem("nick", getNick);
+        if ($("input[type='radio'].btn-check").is(':checked')) {
+            dificultad = $("input[type='radio'].btn-check:checked").attr("id");;
+        }
+        if (dificultad == "facil") {
+            reset(true);
+            mostrarbomba(2);
+            $(".btnPista").removeClass("d-none");
+            $("#btnPista").one("click", pista);
+        }
+        if (dificultad == "normal") {
+            reset(true);
+            mostrarbomba(2);
+        }
+        if (dificultad == "dificil") {
+            reset(true);
+            mostrarbomba(0);
+        }
+        if (dificultad == "legenda") {
+            reset(true);
+            mostrarbomba(0);
+        }
+        $(".btnReload").removeClass("d-none");
+        $(".btnModal").addClass("d-none");
+        $("#modal").modal("hide");
+    } else {
+        $(".modal-title").html("Inserta un Nombre!!");
+    }
+});
+$("#btnClearT").on("click", function () {
+    localStorage.clear()
+    location.reload()
+})
+$("#btnReload").on("click", function () {
+    audio("restart");
+    if (dificultad == "facil") {
+        reset(true);
+        mostrarbomba(2);
+        $(".btnPista").removeClass("d-none");
+        $("#btnPista").one("click", pista);
+    }
+    if (dificultad == "normal") {
+        reset(true);
+        mostrarbomba(2);
+    }
+    if (dificultad == "dificil") {
+        reset(true);
+        mostrarbomba(0);
+    }
+});
 function flip() {
-    currentImg = this.querySelector("img");
+    currentImg = $(this).children("img");
     if (lastImg == null) {
         lastImg = currentImg;
-        lastCard = this;
-        lastCard.style.backgroundImage = "url()";
-        currentImg.style.display = "block";
+        lastCard = $(this);
+        lastCard.css("backgroundImage", "url()");
+        lastImg.css("display", "block");
+        audio("match");
+        lastCard.addClass("carta-selec");
+
+        lastImg.show("fade", {}, 1000, function () {
+            lastImg.attr("src", lastImg.data("src"));
+            lastImg.removeAttr("style").hide().fadeIn();
+        });
+
     } else {
-        if (lastImg != currentImg) {
-            if (lastImg.src == currentImg.src) {
-                this.style.backgroundImage = "url()";
-                currentImg.style.display = "block";
+        currentImg.show("fade", {}, 100, function () {
+            currentImg.removeAttr("style").hide().fadeIn();
+            currentImg.attr("src", currentImg.data("src"));
+        });
+        if (lastImg[0] != currentImg[0]) {
+            if (lastImg.data("src") == currentImg.data("src")) {
+                $(this).css("backgroundImage", "url()");
+                $(this).addClass("carta-win");
+                lastCard.addClass("carta-win");
+                currentImg.css("display", "block");
                 scoreCounter++;
-                scoreNum.innerHTML = scoreCounter;
-                lastCard.removeEventListener("click", flip);
+                progreso += 15;
+                $(".progress-bar").css("width", progreso + "%");
+                $("#scoreNum").html(scoreCounter);
+                lastImg.attr("src", lastImg.data("src"));
+                lastCard.off("click", flip);
+                $(this).off("click", flip);
                 inform("match");
-                this.removeEventListener("click", flip);
-                if (scoreCounter == 6) {
+                audio("match");
+                lastImg.data("descubierta", "si");
+                currentImg.data("descubierta", "si");
+                if (scoreCounter >= 7) {
                     setTimeout(() => {
                         inform("win");
-                        updateTop();
-                        reset();
-                    }, 500);
+                        audio("win");
+                        checkHighScore(errorCounter);
+                        setTimeout(() => { location.reload() }, 1500);
+                    }, 1000);
                 }
                 lastImg = null;
             } else {
-                blockInteractions.style.display = "block";
-                this.style.backgroundImage = "url()";
-                currentImg.style.display = "block";
+                blockInteractions.css("display", "block");
+                $(this).css("backgroundImage", "url()");
+                currentImg.css("display", "block");
                 inform("fail");
+                audio("fail");
+                $(this).addClass("carta-error");
+                lastCard.addClass("carta-error");
                 setTimeout(() => {
-                    this.style.backgroundImage = "url(imgs/carta.jpg)";
-                    lastCard.style.backgroundImage = "url(imgs/carta.jpg)";
-                    currentImg.style.display = "none";
-                    lastImg.style.display = "none";
+                    $(this).css("backgroundImage", "url(imgs/carta.jpg)");
+                    lastCard.css("backgroundImage", "url(imgs/carta.jpg)");
+                    lastImg.removeAttr("src");
+                    currentImg.removeAttr("src");
+                    $(this).removeClass("carta-error");
+                    lastCard.removeClass("carta-error");
+                    $(this).removeClass("carta-selec");
+                    lastCard.removeClass("carta-selec");
+                    currentImg.hide();
+                    lastImg.hide();
                     errorCounter++;
-                    errorNum.innerHTML = errorCounter;
+                    console.log(errorCounter);
+                    if (errorCounter >= 2 && dificultad == "legenda") {
+                        alert("Has perdido el modo LEGENDA");
+                        location.reload();
+                    }
+                    $("#errorNum").html(errorCounter);
                     lastImg = null;
-                    blockInteractions.style.display = "none";
+                    blockInteractions.hide();
                 }, 1000);
             }
         }
     }
 }
-
-function randomCards() {
-    let sources = new Array();
-    let i = 0;
-    imgs.forEach(element => {
-        sources.push(element.src);
+function mostrarbomba(tiempo) {
+    tiempo = tiempo * 1000;
+    blockInteractions.css("display", "block");
+    cards.each(function () {
+        if ($(this).children().data("src") == "imgs/bomba.png") {
+            if (tiempo > 0) {
+                $(this).children().css("display", "block");
+                $(this).css("backgroundImage", "url()");
+                $(this).show("fade", {}, 100, function () {
+                    $(this).children().attr("src", "imgs/bomba.png");
+                    $(this).children().removeAttr("style").hide().fadeIn();
+                });
+            }
+            setTimeout(() => {
+                $(this).one("click", explotar);
+                $(this).css("backgroundImage", "url(imgs/carta.jpg)");
+                $(this).children().removeAttr("src");
+                $(this).children().hide();
+                $(this).off("click", flip);
+                bomba = $(this);
+                blockInteractions.hide();
+            }, tiempo);
+        }
     });
+}
+function explotar() {
+    blockInteractions.css("display", "block");
+    bomba.css("backgroundImage", "url()");
+    bomba.children().css("display", "block");
+    bomba.children().attr("src", "imgs/bomba.png");
+    bomba.effect("explode", {}, 500, setTimeout(function () {
+        bomba.removeAttr("style").hide().fadeIn();
+    }, 500));
+
+    $("#info").data("bomba", "explotada");
+    audio("bomb");
+    errorCounter++;
+    $("#errorNum").html(errorCounter);
+    setTimeout(() => {
+        bomba.css("backgroundImage", "url(imgs/carta.jpg)");
+        bomba.children().removeAttr("src");
+        bomba.children().hide();
+        reset();
+        if (dificultad == "dificil") {
+            mostrarbomba(0);
+        } else {
+            mostrarbomba(2);
+        }
+    }, 500);
+}
+function randomCards() {
+    let i = 0;
     sources = sources.sort((a, b) => 0.5 - Math.random());
-    imgs.forEach(element => {
-        element.src = sources[i];
+    imgs.each(function () {
+        $(this).data("src", sources[i]);
         i++;
     });
 }
-
-function reset() {
-    scoreCounter = 0;
-    errorCounter = 0;
-    scoreNum.innerHTML = scoreCounter;
-    errorNum.innerHTML = errorCounter;
-    cards.forEach(element => {
-        element.style.backgroundImage = "url(imgs/carta.jpg)";
-        element.addEventListener("click", flip);
-    });
-    imgs.forEach(element => {
-        element.style.display = "none";
-    });
+function reset(respuesta) {
+    if (respuesta == true) {
+        scoreCounter = 0;
+        errorCounter = 0;
+        $("#scoreNum").html(scoreCounter);
+        $("#errorNum").html(errorCounter);
+        progreso = 0;
+        $(".progress-bar").css("width", progreso + "%");
+    }
+    cards.removeClass("carta-win");
+    cards.removeClass("carta-error");
+    cards.removeClass("carta-selec");
+    imgs.removeData();
+    lastImg = null;
+    currentImg = null;
+    cards.off("click");
+    cards.css("backgroundImage", "url(imgs/carta.jpg)");
+    cards.click(flip);
+    imgs.css("display", "none");
+    imgs.css("draggable", "false");
     randomCards();
+}
+function checkHighScore(score) {
+    highScores = JSON.parse(localStorage.getItem(HIGH_SCORES)) ?? [];
+    if (score < lowestScore) {
+        saveHighScore(score, highScores);
+        showHighScores();
+    }
+}
+function saveHighScore(score, highScores) {
+    const newScore = {
+        "name": nick.html(),
+        "score": score
+    };
+    highScores.push(newScore);
+    highScores.sort((a, b) => a.score - b.score);
+    highScores.splice(NO_OF_HIGH_SCORES);
+    localStorage.setItem(HIGH_SCORES, JSON.stringify(highScores));
+};
+function showHighScores() {
+    highScores = JSON.parse(localStorage.getItem(HIGH_SCORES)) ?? [];
+    Array.prototype.push.apply(highScores,players);
+    highScores.sort((a, b) => a.score - b.score);
+    jQuery.each(highScores, function (i, val) {
+        $("#TPNick" + i).html(val.name);
+        $("#TPErr" + i).html(val.score + " Fallos");
+    });
+}
+
+function pista() {
+    audio("pista");
+    blockInteractions.css("display", "block");
+    lastImg = null;
+    currentImg = null;
+    cards.each(function () {
+        $(this).children().css("display", "inline");
+        $(this).css("backgroundImage", "url()");
+        $(this).children().attr("src", $(this).children().data("src"));
+        bomba.off("click");
+        if ($(this).children().data("src") != "imgs/bomba.png" && $(this).children().data("descubierta") != "si") {
+            setTimeout(() => {
+                $(this).css("backgroundImage", "url(imgs/carta.jpg)");
+                $(this).children().removeAttr("src");
+                $(this).children().hide();
+                blockInteractions.hide();
+            }, 2000);
+        } else {
+            $(this).children().removeData("descubierta");
+        }
+    });
+}
+function audio(msg) {
+    if (msg == "win") {
+        const audio = new Audio("audio/win.wav");
+        audio.volume = 0.01;
+        audio.play();
+    }
+    if (msg == "fail") {
+        const audio = new Audio("audio/fail.mp3");
+        audio.volume = 0.03;
+        audio.play();
+    }
+    if (msg == "match") {
+        const audio = new Audio("audio/match.wav");
+        audio.volume = 0.01;
+        audio.play();
+    }
+    if (msg == "record") {
+        const audio = new Audio("audio/record.wav");
+        audio.volume = 0.01;
+        audio.play();
+    }
+    if (msg == "bomb") {
+        const audio = new Audio("audio/bomb.wav");
+        audio.volume = 0.01;
+        audio.play();
+    }
+    if (msg == "start") {
+        const audio = new Audio("audio/start.mp3");
+        audio.volume = 0.03;
+        audio.play();
+    }
+    if (msg == "pista") {
+        const audio = new Audio("audio/pista.mp3");
+        audio.volume = 0.03;
+        audio.play();
+    }
+    if (msg == "restart") {
+        const audio = new Audio("audio/restart.mp3");
+        audio.volume = 0.03;
+        audio.play();
+    }
 }
 function inform(msg) {
     if (msg == "win") {
         if (localStorage.getItem("lang") == "ES") {
-            info.innerHTML = "Has ganado: " + errorCounter + " fallos!!";
+            $("#info").html("Has ganado: " + errorCounter + " fallos!!");
         } else {
-            info.innerHTML = "You win: " + errorCounter + " mistakes!!";
+            $("#info").html("You win: " + errorCounter + " mistakes!!");
         }
     }
     if (msg == "fail") {
         if (localStorage.getItem("lang") == "ES") {
-            info.innerHTML = "Prueba otra vez!";
+            $("#info").html("Prueba otra vez!");
         } else {
-            info.innerHTML = "Try again!";
+            $("#info").html("Try again!");
         }
     }
     if (msg == "match") {
         if (localStorage.getItem("lang") == "ES") {
-            info.innerHTML = "Has acertado!";
+            $("#info").html("Has acertado!");
         } else {
-            info.innerHTML = "You're right!";
+            $("#info").html("You're right!");
         }
     }
     if (msg == "record") {
         if (localStorage.getItem("lang") == "ES") {
-            info.innerHTML = "Bien jugado! El nuevo record es: " + errorCounter + " fallos!";
+            $("#info").html(
+                "Bien jugado! El nuevo record es: " + errorCounter + " fallos!"
+            );
         } else {
-            info.innerHTML = "Good game! The new record is: " + errorCounter + " mistakes!";
+            $("#info").html(
+                "Good game! The new record is: " + errorCounter + " mistakes!"
+            );
         }
     }
 }
-function updateTop() {
-    if (scoreCounter == 6) {
-        if (localStorage.getItem("topErr") != null) {
-            if (errorCounter < Number(localStorage.getItem("topErr"))) {
-                localStorage.setItem("topPlayer", nick.innerHTML);
-                localStorage.setItem("topErr", errorCounter);
-                inform("record");
-            }
-        } else {
-            localStorage.setItem("topPlayer", nick.innerHTML);
-            localStorage.setItem("topErr", errorCounter);
-            inform("record");
-        }
-    }
-    if (localStorage.getItem("topPlayer") != null && localStorage.getItem("topErr") != null) {
-        topPlayerNick.innerHTML = localStorage.getItem("topPlayer");
-        topPlayerErr.innerHTML = localStorage.getItem("topErr");
-    }
-}
 
-// Cambiar Idioma con Json
-
-function changeLang() {
+function sd() {
     var xmlhttp = new XMLHttpRequest();
     var url = "lang/lang.json";
 
@@ -177,14 +423,24 @@ function changeLang() {
     xmlhttp.send();
 }
 
-function importJson(arr) {
+function changeLang() {
     let idioma = localStorage.getItem("lang");
-    title.innerHTML = arr.lang[idioma].title;
-    score.innerHTML = arr.lang[idioma].score;
-    description.innerHTML = arr.lang[idioma].description;
-    error.innerHTML = arr.lang[idioma].error;
-    topErrors.innerHTML = arr.lang[idioma].error;
-    topPlayer.innerHTML = arr.lang[idioma].topp;
-    language.innerHTML = arr.lang[idioma].language;
-    footer.innerHTML = arr.lang[idioma].footer;
+    $.getJSON("lang/lang.json", function (arr) {
+        $("#index").html(arr.lang[idioma].index);
+        $("#infor").html(arr.lang[idioma].infor);
+        $("#title").html(arr.lang[idioma].title);
+        $("#score").html(arr.lang[idioma].score);
+        $("#error").html(arr.lang[idioma].error);
+        $("#topErrors").html(arr.lang[idioma].error);
+        $("#topPlayer").html(arr.lang[idioma].topp);
+        $("#language").html(arr.lang[idioma].language);
+        $("#footer").html(arr.lang[idioma].footer);
+        $("#info").html(arr.lang[idioma].progress);
+    });
+}
+
+function preload(arrayOfImages) {
+    $(arrayOfImages).each(function () {
+        $('<img/>')[0].src = this;
+    });
 }
