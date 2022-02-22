@@ -46,8 +46,8 @@ const HIGH_SCORES = 'highScores';
 const highScoreString = localStorage.getItem(HIGH_SCORES);
 var highScores = JSON.parse(highScoreString) ?? [];
 var lowestScore = highScores[5]?.score ?? 1000;
-var players = [{"name": "player","score": 10},{"name": "player","score": 20},{"name": "player","score": 40},{"name": "player","score": 60},{"name": "player","score": 80}];
-    
+var players = [{ "name": "player", "score": 10 }, { "name": "player", "score": 20 }, { "name": "player", "score": 40 }, { "name": "player", "score": 60 }, { "name": "player", "score": 80 }];
+
 
 
 function init() {
@@ -92,9 +92,12 @@ $("#play").on("click", function () {
             reset(true);
             mostrarbomba(0);
         }
-        if (dificultad == "legenda") {
+        if (dificultad == "leyenda") {
             reset(true);
             mostrarbomba(0);
+            $(".btnPista").removeClass("d-none");
+            $(".btnClearT").removeClass("d-none");
+            $("#btnPista").one("click", pista);
         }
         $(".btnReload").removeClass("d-none");
         $(".btnModal").addClass("d-none");
@@ -109,20 +112,7 @@ $("#btnClearT").on("click", function () {
 })
 $("#btnReload").on("click", function () {
     audio("restart");
-    if (dificultad == "facil") {
-        reset(true);
-        mostrarbomba(2);
-        $(".btnPista").removeClass("d-none");
-        $("#btnPista").one("click", pista);
-    }
-    if (dificultad == "normal") {
-        reset(true);
-        mostrarbomba(2);
-    }
-    if (dificultad == "dificil") {
-        reset(true);
-        mostrarbomba(0);
-    }
+    location.reload();
 });
 function flip() {
     currentImg = $(this).children("img");
@@ -134,13 +124,13 @@ function flip() {
         audio("match");
         lastCard.addClass("carta-selec");
 
-        lastImg.show("fade", {}, 1000, function () {
+        lastImg.show("fade", {}, 10, function () {
             lastImg.attr("src", lastImg.data("src"));
             lastImg.removeAttr("style").hide().fadeIn();
         });
 
     } else {
-        currentImg.show("fade", {}, 100, function () {
+        currentImg.show("fade", {}, 10, function () {
             currentImg.removeAttr("style").hide().fadeIn();
             currentImg.attr("src", currentImg.data("src"));
         });
@@ -191,8 +181,8 @@ function flip() {
                     lastImg.hide();
                     errorCounter++;
                     console.log(errorCounter);
-                    if (errorCounter >= 2 && dificultad == "legenda") {
-                        alert("Has perdido el modo LEGENDA");
+                    if (errorCounter >= 2 && dificultad == "leyenda") {
+                        alert("Has perdido el modo LEYENDA");
                         location.reload();
                     }
                     $("#errorNum").html(errorCounter);
@@ -236,17 +226,15 @@ function explotar() {
     bomba.effect("explode", {}, 500, setTimeout(function () {
         bomba.removeAttr("style").hide().fadeIn();
     }, 500));
-
     $("#info").data("bomba", "explotada");
     audio("bomb");
-    errorCounter++;
     $("#errorNum").html(errorCounter);
     setTimeout(() => {
         bomba.css("backgroundImage", "url(imgs/carta.jpg)");
         bomba.children().removeAttr("src");
         bomba.children().hide();
         reset();
-        if (dificultad == "dificil") {
+        if (dificultad == "dificil" || dificultad == "leyenda") {
             mostrarbomba(0);
         } else {
             mostrarbomba(2);
@@ -302,7 +290,7 @@ function saveHighScore(score, highScores) {
 };
 function showHighScores() {
     highScores = JSON.parse(localStorage.getItem(HIGH_SCORES)) ?? [];
-    Array.prototype.push.apply(highScores,players);
+    Array.prototype.push.apply(highScores, players);
     highScores.sort((a, b) => a.score - b.score);
     jQuery.each(highScores, function (i, val) {
         $("#TPNick" + i).html(val.name);
@@ -316,19 +304,35 @@ function pista() {
     lastImg = null;
     currentImg = null;
     cards.each(function () {
-        $(this).children().css("display", "inline");
-        $(this).css("backgroundImage", "url()");
-        $(this).children().attr("src", $(this).children().data("src"));
-        bomba.off("click");
-        if ($(this).children().data("src") != "imgs/bomba.png" && $(this).children().data("descubierta") != "si") {
-            setTimeout(() => {
-                $(this).css("backgroundImage", "url(imgs/carta.jpg)");
-                $(this).children().removeAttr("src");
-                $(this).children().hide();
-                blockInteractions.hide();
-            }, 2000);
+        if (dificultad == "leyenda") {
+            $(this).children().css("display", "inline");
+            $(this).css("backgroundImage", "url()");
+            $(this).children().attr("src", $(this).children().data("src"));
+            if ( $(this).children().data("descubierta") != "si") {
+                setTimeout(() => {
+                    $(this).css("backgroundImage", "url(imgs/carta.jpg)");
+                    $(this).children().removeAttr("src");
+                    $(this).children().hide();
+                    blockInteractions.hide();
+                }, 500);
+            } else {
+                $(this).children().removeData("descubierta");
+            }
         } else {
-            $(this).children().removeData("descubierta");
+            $(this).children().css("display", "inline");
+            $(this).css("backgroundImage", "url()");
+            $(this).children().attr("src", $(this).children().data("src"));
+            bomba.off("click");
+            if ($(this).children().data("src") != "imgs/bomba.png" && $(this).children().data("descubierta") != "si") {
+                setTimeout(() => {
+                    $(this).css("backgroundImage", "url(imgs/carta.jpg)");
+                    $(this).children().removeAttr("src");
+                    $(this).children().hide();
+                    blockInteractions.hide();
+                }, 2000);
+            } else {
+                $(this).children().removeData("descubierta");
+            }
         }
     });
 }
