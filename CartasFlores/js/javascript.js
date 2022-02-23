@@ -40,6 +40,23 @@ let sources = new Array(
     "imgs/carta7.png",
     "imgs/bomba.png"
 );
+let sources2 = new Array(
+    "imgs/carta3.png",
+    "imgs/carta3.png",
+    "imgs/carta3.png",
+    "imgs/carta6.png",
+    "imgs/carta6.png",
+    "imgs/carta6.png",
+    "imgs/carta6.png",
+    "imgs/carta6.png",
+    "imgs/carta6.png",
+    "imgs/carta6.png",
+    "imgs/carta6.png",
+    "imgs/carta6.png",
+    "imgs/carta6.png",
+    "imgs/carta6.png",
+    "imgs/carta6.png",
+);
 
 const NO_OF_HIGH_SCORES = 5;
 const HIGH_SCORES = 'highScores';
@@ -98,6 +115,9 @@ $("#play").on("click", function () {
             $(".btnPista").removeClass("d-none");
             $(".btnClearT").removeClass("d-none");
             $("#btnPista").one("click", pista);
+        }
+        if (dificultad == "infiltrado") {
+            resetInfiltrado();
         }
         $(".btnReload").removeClass("d-none");
         $(".btnModal").addClass("d-none");
@@ -182,8 +202,8 @@ function flip() {
                     errorCounter++;
                     console.log(errorCounter);
                     if (errorCounter >= 2 && dificultad == "leyenda") {
-                        alert("Has perdido el modo LEYENDA");
                         location.reload();
+                        alert("Has perdido el modo LEYENDA");
                     }
                     $("#errorNum").html(errorCounter);
                     lastImg = null;
@@ -241,11 +261,11 @@ function explotar() {
         }
     }, 500);
 }
-function randomCards() {
+function randomCards(arr) {
     let i = 0;
-    sources = sources.sort((a, b) => 0.5 - Math.random());
+    arr = arr.sort((a, b) => 0.5 - Math.random());
     imgs.each(function () {
-        $(this).data("src", sources[i]);
+        $(this).data("src", arr[i]);
         i++;
     });
 }
@@ -269,8 +289,64 @@ function reset(respuesta) {
     cards.click(flip);
     imgs.css("display", "none");
     imgs.css("draggable", "false");
-    randomCards();
+    randomCards(sources);
 }
+function resetInfiltrado() {
+    randomCards(sources2);
+    cards.click(flipInfiltrado);
+    imgs.css("display", "none");
+    imgs.css("draggable", "false");
+    cards.each(function () {
+        $(this).children().css("display", "inline");
+        $(this).css("backgroundImage", "url()");
+        $(this).children().attr("src", $(this).children().data("src"));
+        setTimeout(() => {
+            $(this).css("backgroundImage", "url(imgs/carta.jpg)");
+            $(this).children().removeAttr("src");
+            $(this).children().hide();
+            blockInteractions.hide();
+        }, 500);
+    });
+}
+function flipInfiltrado() {
+    currentImg = $(this).children("img");
+    if (currentImg.data("src") == "imgs/carta6.png") {
+        $(this).css("backgroundImage", "url()");
+        $(this).addClass("carta-error");
+        currentImg.css("display", "block");
+        currentImg.show("fade", {}, 10, function () {
+            currentImg.attr("src", currentImg.data("src"));
+            currentImg.removeAttr("style").hide().fadeIn();
+        });
+        audio("fail");
+        setTimeout(function () {
+            location.reload();
+            alert("Perdiste el Juego");
+        }, 1000)
+    } else {
+        $(this).css("backgroundImage", "url()");
+        currentImg.css("display", "block");
+        audio("match");
+        scoreCounter++;
+        progreso += 34;
+        $(".progress-bar").css("width", progreso + "%");
+        $("#scoreNum").html(scoreCounter);
+        $(this).addClass("carta-win");
+        currentImg.show("fade", {}, 10, function () {
+            currentImg.attr("src", currentImg.data("src"));
+            currentImg.removeAttr("style").hide().fadeIn();
+        });
+        if (scoreCounter >= 3) {
+            setTimeout(() => {
+                inform("win");
+                audio("win");
+                setTimeout(() => { location.reload() }, 1500);
+            }, 1000);
+        }
+    }
+}
+
+
 function checkHighScore(score) {
     highScores = JSON.parse(localStorage.getItem(HIGH_SCORES)) ?? [];
     if (score < lowestScore) {
@@ -308,7 +384,7 @@ function pista() {
             $(this).children().css("display", "inline");
             $(this).css("backgroundImage", "url()");
             $(this).children().attr("src", $(this).children().data("src"));
-            if ( $(this).children().data("descubierta") != "si") {
+            if ($(this).children().data("descubierta") != "si") {
                 setTimeout(() => {
                     $(this).css("backgroundImage", "url(imgs/carta.jpg)");
                     $(this).children().removeAttr("src");
@@ -411,20 +487,6 @@ function inform(msg) {
             );
         }
     }
-}
-
-function sd() {
-    var xmlhttp = new XMLHttpRequest();
-    var url = "lang/lang.json";
-
-    xmlhttp.onreadystatechange = function () {
-        if (this.readyState == 4 && this.status == 200) {
-            var myArr = JSON.parse(this.responseText);
-            importJson(myArr);
-        }
-    };
-    xmlhttp.open("GET", url, true);
-    xmlhttp.send();
 }
 
 function changeLang() {
